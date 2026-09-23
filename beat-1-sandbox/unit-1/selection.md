@@ -24,12 +24,12 @@ Verdict: accept
 
 ```json
 {
-  "item": "[https://github.com/codepath/pathreview-ai301-fa26-s3/issues/72](https://github.com/codepath/pathreview-ai301-fa26-s3/issues/72)",
+  "item": "https://github.com/codepath/pathreview-ai301-fa26-s3/issues/72",
   "checks": [
-    {"name": "no_active_claimants", "grade": "pass", "evidence": "assignees: []; repo has zero pull requests and the issue timeline shows no cross-referenced or connected PR"},
-    {"name": "active_maintainer", "grade": "pass", "evidence": "main pushed 2026-09-16T21:50:20Z by Andrew Burke, 0 days before grading"},
-    {"name": "clear_reproducible_scope", "grade": "pass", "evidence": "names core/security.py and tests/unit/test_security.py, plus the xfail marker (manifest H-05) to remove"},
-    {"name": "repo_in_use", "grade": "pass", "evidence": "latest default-branch commit 2026-09-16T21:42:18Z, within 30 days"}
+    {"name": "no_active_claimants", "grade": "pass", "evidence": "assignees: [] and no linked/referenced PR; the only comment is a classmate's 'I'd like to claim this one' (student claim comments don't block per Path Review house rule)"},
+    {"name": "active_maintainer", "grade": "pass", "evidence": "no maintainer comment on the thread (commenter authorAssociation: NONE), but default branch has a commit at 2026-09-16T21:42:18Z, 6 days before today (2026-09-22), within the 15-day window"},
+    {"name": "clear_reproducible_scope", "grade": "pass", "evidence": "issue body names exact files (`core/security.py`, `tests/unit/test_security.py`), the failing test id, and an estimated effort of 1-2 hours"},
+    {"name": "repo_in_use", "grade": "pass", "evidence": "most recent default-branch commit is 2026-09-16, well within 30 days of today (2026-09-22)"}
   ],
   "verdict": "accept"
 }
@@ -43,27 +43,48 @@ Quote source text directly in each field below. Paraphrase does not satisfy them
 
 **Run history**
 
-[The agreement score of each run you did, in order. A single run is a complete answer if
-only one run occurred. **The last score in your list must match the agreement line in the
-`eval-run.txt` you committed** — that file is the record of your final run.]
+The committed full run recorded: "agreement: 18/20 scored items  (bar:
+18/20: PASS)". Its category line was "categories: claimed 4/4
+clear-accept 6/8 dead-repo 3/3 policy 1/1 scope 4/4". The partial
+`--only` runs used while revising checks were diagnostic runs, not the
+committed full-run record.
 
 **Issue analysis**
 
-[One scored issue, identified by id (`issue-01` through `issue-20`; the `calib-`
-issues are not scored). State your rubric's decision, the gold label, and the
-reasoning that produced your rubric's result.]
+I used `issue-15`. My rubric's decision is `reject`, which matches the
+gold label `reject`. The snapshot says, "this issue: assignees: none;
+linked PRs: zulip/zulip#20840 (closed); zulip/zulip#23123 (closed)."
+Although the issue has a friendly label and an active repository, the two
+closed linked PRs are evidence that this is not a fresh, settled first
+contribution. This matches the gold-label explanation: "years of design
+debate and two abandoned PRs behind a friendly label."
 
 **Check rationale**
 
-[One check from the `rubric.md` uploaded to `tools/issue-select/`, quoted as it is
-currently written, with the reasoning behind its current form.]
+`settled_spec`: "Pass if the issue states an observable bug and the
+expected invariant or desired behavior. Words such as “potential causes”,
+“suggestions”, or multiple compatible fixes for the same reported bug do
+not make the specification unresolved. Fail only when the evidence
+explicitly asks maintainers to choose between competing product/design
+directions, leaves the desired behavior undecided, OR shows two or more
+closed/abandoned linked PRs without a recent maintainer restatement of the
+intended solution."
+
+I wrote it this way to distinguish an actionable bug with several possible
+technical fixes from a task whose product or design direction is genuinely
+unsettled. It also catches old issues where repeated unsuccessful attempts
+are a warning that the apparent small task has hidden complexity.
 
 **Trade-offs**
 
-[What the quoted check gives up. Any one of these is a complete answer: an issue whose
-result it changes, a canary you re-ran with `--only`, a case you accept it will miss, or a
-stated reason nothing changed elsewhere. "Nothing changed, and here is how I know" earns
-the point in full when the reason follows.]
+The check deliberately does not reject a performance bug merely because it
+lists several hypotheses or fixes. The `issue-19` snapshot says, "There
+are two potential causes which should be fixed," followed by several
+suggestions, but its gold-label note calls it a "maintainer-diagnosed
+performance bug with named causes, unclaimed." The trade-off is that a
+task with a vaguely described bug but no visible disagreement can still
+pass; the check only rejects uncertainty that is explicit in the
+available evidence.
 
 ---
 
@@ -75,12 +96,23 @@ This is also the basis for the claim comment you write in Unit 2.
 
 **Selection rationale**
 
-[Answer all three:
+1. I selected this issue because it is a bounded Python security fix with
+an identified implementation area, `core/security.py`, and a corresponding
+test file, `tests/unit/test_security.py`. That gives me a focused task that
+fits the available unit time while letting me practice security-oriented
+debugging and tests.
 
-1. The issue's fit to your interests and to the time available.
-2. What the verdict identified correctly, and what you weighed that the rubric could
-   not.
-3. The anticipated difficulty in claiming it.]
+2. The verdict correctly identified that the issue is unassigned, the
+repository is active, and the change has a concrete scope. I also weighed
+the fact that the requested change removes an existing xfail marker, which
+means I need to understand the current test failure rather than only make
+the test pass. That implementation-learning value is specific to this
+issue and is not captured by the binary rubric verdict.
+
+3. Claiming it should be straightforward under the classroom house rule:
+other student claim comments do not block the issue. The main difficulty
+will be reproducing the security behavior and making a minimal fix that
+does not weaken the intended protection or introduce a regression.
 
 ---
 
