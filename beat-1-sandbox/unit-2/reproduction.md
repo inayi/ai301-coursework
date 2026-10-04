@@ -96,28 +96,43 @@ fields.
 
 **Run history**
 
-[The agreement score of each run you did, in order. A single run is a complete answer if
-only one run occurred. **The last score in your list must match the agreement line in the
-`eval-run.txt` you committed** — that file is the record of your final run.]
+18/20
+
+(Final run, saved as `eval-run.txt`: "agreement: 18/20 scored items  (bar: 18/20: PASS)".)
 
 **Package analysis**
 
-[Pick one scored package (`pkg-01` through `pkg-20` — the four `calib-` packages are never
-scored). Name it by id, say what your rubric decided and what the gold label said, and
-explain why your rubric read it that way.]
+pkg-16. The gold label was reject; my rubric graded it accept (the harness note reads
+"graded accept", so no check failed). Every required check in my rubric passed on it:
+`no_active_claimants`, `active_maintainer`, `contribution_policy`, `settled_spec` and
+`behavior_matches_issue`. My rubric reads a package as ready when the repo and issue are
+sound and the report's output excerpt shows the issue's behavior. It has no check on the
+environment record, on whether the steps can be followed, or on the claim comment's wording.
+So a package that is rejected for one of those flaws gets through. That is the gap pkg-16
+exposes.
 
 **Check rationale**
 
-[Quote one check from the `rubric.md` you uploaded to `tools/repro-check/`, exactly as it reads now.
-Then say why it reads that way — what you revised to get there, or what you rejected in
-favour of it.]
+> | behavior_matches_issue |	the repro report's output excerpt, log or screenshot, read against the error or behavior the issue describes |	The artifact shows the same error or behavior the issue names, in the same component. An adjacent failure fails. An evidenced cannot-reproduce that says so plainly also passes.	| required |
+
+It judges the outcome, not the write-up's shape. The pass condition asks whether the
+artifact shows the issue's own error in the issue's own component, which is something
+another grader can apply and get the same answer. "An adjacent failure fails" is aimed at
+the wrong-target packages, where a report reproduces a different error than the one the issue
+names. The last sentence keeps a plainly evidenced cannot-reproduce from being punished,
+because an honest negative is a valid result. I rejected a shape-based check, such as counting
+steps or requiring a template's headings, because the rubric's own guidance says those make
+graders disagree with themselves.
 
 **Trade-offs**
 
-[Every check gives something up. Any one of these is a complete answer: a package whose
-result it changes, a canary you re-ran with `--only`, a case you accept it will miss, or a
-stated reason nothing changed elsewhere. "Nothing changed, and here is how I know" earns
-the point in full when the reason follows.]
+The rubric covers the wrong-target family (wrong-target 3/4) and the repo-health families
+(no-evidence 4/4, unfollowable-comms 3/3), and it passes the bar at 18/20. It gives up
+the environment-record and claim-wording families, which no check reads. The two misses
+show it: pkg-16 (gold reject) is graded accept because no check reads what it got wrong,
+and pkg-01 (gold accept) is rejected because `active_maintainer` failed on it. I accept
+both. Adding a stricter check for the pkg-16 style of flaw could start rejecting good
+packages. The last full run is the evidence that the rubric clears the bar as it stands.
 
 ---
 
