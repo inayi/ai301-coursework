@@ -37,57 +37,66 @@ I think this issue is straightforward and I am confident to fix it. My plan is:
 **Reproduction comment**
 
 https://github.com/codepath/pathreview-ai301-fa26-s3/issues/72#issuecomment-5976370402
-Reproduction report for [[#72](https://github.com/codepath/pathreview-ai301-fa26-s3/issues/72)](https://github.com/codepath/pathreview-ai301-fa26-s3/issues/72)
+## Reproduction report for #72
 
-**Result:** *Reproduced*. `verify_password()` raises `passlib.exc.UnknownHashError` on malformed stored hashes instead of failing closed and returning `False`.
+I reproduced this. `verify_password()` raises `UnknownHashError` for a non-bcrypt stored hash instead of returning `False`. It also raises `ValueError` for some malformed bcrypt-shaped hashes, which the issue doesn't mention.
 
 ### Environment
 
-* **OS:** Windows (win32)
-* **Python:** 3.14.5 (using `.venv`)
-* **Dependencies:** `passlib` 1.7.4, `bcrypt` 4.3.0, `pytest` 9.1.1
-* **Setup:** Followed `docs/SETUP.md` (`.env`, Docker Compose, and `make setup`)
+| | |
+|---|---|
+| OS | Windows 11 Pro 10.0.26200, Git Bash (MINGW64) |
+| Python | 3.14.5 |
+| passlib | 1.7.4 |
+| bcrypt | 4.3.0 |
+| pytest | 9.1.1 |
+| Commit | `2f4e82f` (main, clean tree) |
 
----
+Setup: I created a venv and ran `pip install -e ".[dev]"`, the same step `make setup` runs. I skipped Docker, Postgres and Redis because this test is a pure unit test with no database.
 
-### Steps to Reproduce
+### Steps and result
 
-1. Bypassed the `@pytest.mark.xfail` marker on the covering test to observe the unhandled exception:
-```cmd
-.\.venv\Scripts\python.exe -m pytest tests/unit/test_security.py::TestSecurity::test_verify_with_wrong_hash_format -vv --runxfail --tb=long
+1. Ran the covering test with `--runxfail`:
 
-```
-2. Direct function call under test:
-```python
-from core.security import verify_password
+   ```
+   pytest tests/unit/test_security.py::TestSecurity::test_verify_with_wrong_hash_format --runxfail --no-cov
+   ```
 
-verify_password("password", "not_a_valid_bcrypt_hash")
+   The test **FAILED** with:
 
-```
----
+   ```
+   passlib.exc.UnknownHashError: hash could not be identified
+   (passlib/context.py:1132, identify_record)
+   ```
 
-### Observed Output
+   The unmodified `core/security.py` (`verify_password`, line 27) calls `pwd_context.verify()` with no error handling, so the exception escapes.
 
-**Running pytest with `--runxfail`:**
+2. Ran the whole file without `--runxfail`: `24 passed, 1 xfailed`. The strict xfail is currently masking this bug.
 
-```text
-FAILED tests/unit/test_security.py::TestSecurity::test_verify_with_wrong_hash_format
+3. Called `verify_password("password", ...)` directly with each hash below:
 
->       result = verify_password("password", wrong_hash)
+| Stored hash | Result |
+|---|---|
+| valid bcrypt, correct password (control) | `True` |
+| valid bcrypt, wrong password (control) | `False` |
+| `"not_a_valid_bcrypt_hash"` | **raises `passlib.exc.UnknownHashError`** |
+| `""` (empty) | **raises `UnknownHashError`** |
+| `b"garbage"` (bytes) | **raises `UnknownHashError`** |
+| valid hash truncated to 30 chars | **raises `ValueError`** ("checksum must be exactly 31 chars") |
+| `"$2b$12$"` (prefix only) | **raises `ValueError`** ("salt too small") |
+| `"$2b$99$..."` (cost out of range) | **raises `ValueError`** ("rounds (99) is too large") |
+| `"$2b$12$" + "x"*53` (valid prefix, garbage body) | `False` |
+| `None` | `False` |
 
-core\security.py:37: in verify_password
-    return bool(pwd_context.verify(plain_password, hashed_password))
-.venv\Lib\site-packages\passlib\context.py:1132: in identify_record
-    raise exc.UnknownHashError("hash could not be identified")
-E   passlib.exc.UnknownHashError: hash could not be identified
+### Findings
 
-```
----
+- Catching only `UnknownHashError` would fix the failing test. It would still leave truncated or partly malformed bcrypt hashes raising `ValueError`. A complete fail-closed fix needs to catch both `UnknownHashError` and `ValueError`.
+- The setup prints a harmless `(trapped) error reading bcrypt version` traceback. It comes from passlib 1.7.4 reading bcrypt 4.x and is unrelated to this issue.
 
-### Expected vs. Actual Behavior
+### Planned fix
 
-* **Expected:** `verify_password("password", "not_a_valid_bcrypt_hash")` should return `False`.
-* **Actual:** `verify_password()` lets `passlib.exc.UnknownHashError` escape unhandled from `core/security.py:37`.
+In `verify_password`, catch `(UnknownHashError, ValueError)` and return `False`. Then remove the `@pytest.mark.xfail` marker (manifest H-05) from `test_verify_with_wrong_hash_format`. I'll also add parametrized test cases for the empty, truncated and bad-cost hashes above.
+
 
 ## Eval iterations
 
