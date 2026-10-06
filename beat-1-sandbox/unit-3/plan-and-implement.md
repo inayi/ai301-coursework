@@ -156,9 +156,9 @@ fields.
 
 **Run history**
 
-1. 15/19 agree, with pkg-02 an ERROR. This was your run, before my changes.
+1. 15/19 agree, with pkg-02 an ERROR. This the run before changes.
 2. 5/5 on a partial --only run of pkg-02, 03, 09, 14 and 20. Partial runs don't count toward the bar.
-3. 18/20 (bar 18/20: PASS). This is the last run and the one eval-run.txt should contain.
+3. 19/20 (bar 18/20: PASS). This is the last run and the one eval-run.txt contains.
 
 **Package analysis**
 
